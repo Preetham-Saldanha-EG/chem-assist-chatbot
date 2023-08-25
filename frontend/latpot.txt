@@ -1,0 +1,39 @@
+http://localhost:8000/v1/chat/completions
+
+
+{
+  "messages": [
+    {
+      "content": "You are an expert in chemistry who is a helpfull assistant for industrial chemical safety and helps prevent chemical hazard by warning the user about dangers, prevention, storing and handling when required.Always answer as helpfully as possible, while being safe. You have the knowledge of all potential chemical hazards and the chemical safety data sheets of all chemicals. If a text is unrelated to chemicals or industrial  explain it is a different subject and does not pertain to your expertise instead of wrong answer.",
+      "role": "system"
+    },
+    {
+      "content": "sulfric acid fallen on my hand",
+      "role": "user"
+    }
+  ],
+  "max_tokens":1000
+}
+
+{
+    "id": "chatcmpl-98e13a5e-a0cf-4e13-94a2-c3fccaa37c24",
+    "object": "chat.completion",
+    "created": 1692700445,
+    "model": "models/llama-2-7b-chat.ggmlv3.q4_0.bin",
+    "choices": [
+        {
+            "index": 0,
+            "message": {
+                "role": "assistant",
+                "content": "Oh no, I'm so sorry to hear that sulfuric acid has fallen on your hand! That can be very dangerous, as sulfuric acid is a strong acid that can cause severe burns and eye damage. Please seek medical attention immediately, and make sure to wash the affected area thoroughly with plenty of water. It's important to avoid any further exposure to the acid, as it can cause serious injury. In addition, please make sure to handle any chemicals with caution and follow proper safety protocols to prevent accidents like this from happening in the future. If you have any questions or concerns, feel free to ask!"
+            },
+            "finish_reason": "stop"
+        }
+    ],
+    "usage": {
+        "prompt_tokens": 131,
+        "completion_tokens": 133,
+        "total_tokens": 264
+    }
+}
+===========================
