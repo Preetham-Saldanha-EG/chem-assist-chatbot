@@ -2,7 +2,6 @@
 from typing import Any
 from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
-
  
 class EngToDanTranslator():
     def __init__(self):
