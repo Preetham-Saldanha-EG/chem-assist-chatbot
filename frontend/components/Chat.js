@@ -1,6 +1,6 @@
 import React from "react";
 
-function Chat({ role, message }) {
+function Chat({ role, message, timeTaken }) {
   const style =
     role === "user"
       ? "bg-blue-100  rounded-sm p-3 w-full flex gap-3 box-border"
@@ -8,15 +8,20 @@ function Chat({ role, message }) {
 
   return (
     <div className={style}>
-      <p
-        className={
-          role === "user"
-            ? "flex-wrap font-mono font-bold text-blue-700"
-            : " flex-wrap font-mono font-bold text-green-700"
-        }
-      >
-        {role !== "user" ? "Mr.Chemical:" : "user:"}
-      </p>
+      <div>
+        <p
+          className={
+            role === "user"
+              ? "flex-wrap font-mono font-bold text-blue-700"
+              : " flex-wrap font-mono font-bold text-green-700"
+          }
+        >
+          {role !== "user" ? "Mr.Chemical:" : "user:"}
+        </p>
+        <p className="font-mono font-bold text-gray-700">
+          {role !== "user" ? "(" + timeTaken + "s" + ")" : ""}
+        </p>
+      </div>
       <p className=""> {message}</p>
     </div>
   );

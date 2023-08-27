@@ -4,11 +4,13 @@ from engToDan import EngToDanTranslator
 from danToEng import DanToEngTranslator
 from llamaPython import Llama2
 from pydantic import BaseModel
-
+from fastapi.middleware.cors import CORSMiddleware
+import time
 
 class Message(BaseModel):
     content:str
     role:str
+    totalTime:float
 
 class Messages(BaseModel):
     messages:List[Message]
@@ -17,6 +19,18 @@ class Messages(BaseModel):
     
 app = FastAPI()
 
+origins = [
+    "http://localhost:3000",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 def formatPrompt(input):
     template ='''<s>[INST] <<SYS>>You are an expert in chemistry who is a helpfull assistant for industrial chemical safety and helps prevent chemical hazard by warning the user about dangers, prevention, storing and handling when required.Always answer as helpfully as possible, while being safe. You have the knowledge of all potential chemical hazards and the chemical safety data sheets of all chemicals. If a text is unrelated to chemicals or industrial  explain it is a different subject and does not pertain to your expertise instead of wrong answer.<</SYS>>'''
     count=0
@@ -24,44 +38,17 @@ def formatPrompt(input):
         if(count%2==0):
             if(count==0):
                 template+=message.content + "[/INST]"
+                count+=1
                 continue
             template += "<s>[INST]" + message.content + "[/INST]"
-            count+=1
+            
         else: 
-            template += message.content +"<s>"
-
-    return template
-
-def formatPromptENG(input):
-    template ='''<s>[INST] <<SYS>>You are an expert in chemistry who is a helpfull assistant for industrial chemical safety and helps prevent chemical hazard by warning the user about dangers, prevention, storing and handling when required.Always answer as helpfully as possible, while being safe. You have the knowledge of all potential chemical hazards and the chemical safety data sheets of all chemicals. If a text is unrelated to chemicals or industrial  explain it is a different subject and does not pertain to your expertise instead of wrong answer.<</SYS>>'''
-    count=0
-    for message in input:
-        if(count%2==0):
-            if(count==0):
-                template+=message.content + "[/INST]"
-                continue
-            template += "<s>[INST]" + message.content + "[/INST]"
-            count+=1
-        else: 
-            template += message.content +"<s>"
+            template += message.content +"</s>"
+        count+=1
 
     return template
 
 
-def formatPromptDAN(input):
-    template ='''<s>[INST] <<SYS>>You are an expert in chemistry who is a helpfull assistant for industrial chemical safety and helps prevent chemical hazard by warning the user about dangers, prevention, storing and handling when required.Always answer as helpfully as possible, while being safe. You have the knowledge of all potential chemical hazards and the chemical safety data sheets of all chemicals. If a text is unrelated to chemicals or industrial  explain it is a different subject and does not pertain to your expertise instead of wrong answer.<</SYS>>'''
-    count=0
-    for message in input:
-        if(count%2==0):
-            if(count==0):
-                template+=message['content'] + "[/INST]"
-                continue
-            template += "<s>[INST]" + message['content'] + "[/INST]"
-            count+=1
-        else: 
-            template += message['content'] +"<s>"
-
-    return template
 
 
 
@@ -85,30 +72,35 @@ def read_item(item_id: int, q: Union[str, None] = None):
 @app.post("/v1/chat/generate/english")
 def generateInEnglish(body:Messages):
     print(body.messages)
-    text= formatPromptENG(body.messages)
+    start = time.time()
+    text= formatPrompt(body.messages)
+    print("checking..",text)
     llm = Llama2()
     result = llm(text)
-    print(result["choices"][0]["text"][len(text):])
-    return {"result":result["choices"][0]["text"][len(text):]}
+    print("output",result["choices"][0]["text"][len(text):])
+    totalTime = time.time()- start
+
+    return {"result":result["choices"][0]["text"][len(text):], "totalTime":round(totalTime,2)}
 
 @app.post("/v1/chat/generate/danish")
 def generateInDanish(body:Messages):
     lastInput  = body.messages[len(body.messages)-1]
     print(lastInput.content)
     danish_text = lastInput.content
-
+    start = time.time()
     # convert the last message
     translator =  DanToEngTranslator()
 
     converted = translator(danish_text=danish_text)
     print(converted)
     newMessageList : Messages= body.messages[:len(body.messages)-1]
-    convertedMessage:Message ={"content":converted, "role":lastInput.role} 
+    convertedMessage:Message =  Message(content=converted,role="user",totalTime=float(0))
+ 
     newMessageList.append(convertedMessage)
 
     print(newMessageList)
     # format the message to prompt llama 2
-    text= formatPromptDAN(newMessageList)
+    text= formatPrompt(newMessageList)
     print(text)
 
     #feed to llama 2
@@ -117,10 +109,11 @@ def generateInDanish(body:Messages):
 
 
     # # convert back to danish:
-    str =output["choices"][0]["text"][len(text):]
+    answer =output["choices"][0]["text"][len(text):]
     etd= EngToDanTranslator()
-    result = etd(str)
-    return {"result":result}
+    result = etd(answer)
+    totalTime= time.time() - start
+    return {"result":result, "totalTime":round(totalTime,2), "englishChat":{"question":converted, "answer":answer}}
 
 
 
