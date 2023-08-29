@@ -11,16 +11,10 @@ function LanguageSelector({ isDanish, handleSwitchToDanish }) {
 
   return (
     <div className="flex max-w-full w-full justify-between font-sans bg-slate-200 rounded-t-sm hover:bg-slate-300 cursor-pointer text-lg">
-      <button
-        className={englishClass}
-        onClick={() => handleSwitchToDanish(false)}
-      >
+      <button className={englishClass} onClick={handleSwitchToDanish}>
         English
       </button>
-      <button
-        className={danishClass}
-        onClick={() => handleSwitchToDanish(true)}
-      >
+      <button className={danishClass} onClick={handleSwitchToDanish}>
         Danish
       </button>
     </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import useSWR from "swr";
 import axios from "axios";
 import PromptInput from "./PromptInput";
@@ -6,6 +6,7 @@ import Chat from "./Chat";
 import Spinner from "./Spinner";
 import LanguageSelector from "./LanguageSelector";
 import { content } from "@/tailwind.config";
+import Modal from "./Modal";
 
 function ChatWindow({}) {
   const [prompt, setPrompt] = useState("");
@@ -13,6 +14,10 @@ function ChatWindow({}) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isDanish, setIsDanish] = useState(false);
   const [danishToEnglishMessages, setDanishToEnglishMessages] = useState([]);
+  const abortController = useRef(new AbortController());
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [handleYes, setHandleYes] = useState(null);
+  const [handleNo, setHandleNo] = useState(null);
   const [chatInfo, setChatInfo] = useState([
     // {
     //   content:
@@ -25,20 +30,43 @@ function ChatWindow({}) {
     // },
   ]);
 
+  const handleModalOpen = async () => {
+    console.log("trigger..");
+    const result = await new Promise((resolve, reject) => {
+      const yesCallback = () => {
+        console.log("test");
+        resolve(true);
+        setIsDanish((prev) => !prev);
+        setChatInfo([]);
+        setIsGenerating(false);
+
+        abortController.current.abort();
+        abortController.current = new AbortController();
+        setIsModalOpen(false);
+      };
+      setHandleYes(() => yesCallback);
+      const noCallback = () => {
+        resolve(false);
+        setIsModalOpen(false);
+      };
+      setHandleNo(() => noCallback);
+    });
+    console.log("trigger...end");
+    // if (result) {
+
+    // }
+  };
+
   const handlePromptSubmit = async () => {
     if (prompt === "") return;
 
     setIsSubmit((isSubmit) => !isSubmit);
   };
 
-  const handleSwitchToDanish = (flag) => {
-    if (!isDanish) {
-      setChatInfo([]);
-    }
-    setIsDanish(flag);
+  const handleSwitchToDanish = () => {
+    setIsModalOpen(true);
+    handleModalOpen();
   };
-
-  const handleSubmit = () => {};
 
   const handleEnglishSubmit = () => {
     const payload = {
@@ -56,7 +84,9 @@ function ChatWindow({}) {
       { content: prompt, role: "user", totalTime: parseFloat(0) },
     ];
     axios
-      .post("http://127.0.0.1:8000/v1/chat/generate/english", payload)
+      .post("http://127.0.0.1:8000/v1/chat/generate/english", payload, {
+        signal: abortController.current?.signal,
+      })
       .then((data) => {
         console.log(data);
         // const newMessage = data.data?.choices[0].message?.content;
@@ -68,7 +98,8 @@ function ChatWindow({}) {
           ...chatInfo,
           { content: newMessage, role: "system", totalTime: timeTaken },
         ]);
-      });
+      })
+      .catch((err) => console.log(err));
   };
 
   const handleDanishSubmit = () => {
@@ -87,7 +118,9 @@ function ChatWindow({}) {
       { content: prompt, role: "user", totalTime: parseFloat(0) },
     ];
     axios
-      .post("http://127.0.0.1:8000/v1/chat/generate/danish", payload)
+      .post("http://127.0.0.1:8000/v1/chat/generate/danish", payload, {
+        signal: abortController.current.signal,
+      })
       .then((data) => {
         console.log(data);
         // const newMessage = data.data?.choices[0].message?.content;
@@ -112,7 +145,8 @@ function ChatWindow({}) {
             totalTime: timeTaken,
           },
         ]);
-      });
+      })
+      .catch((err) => console.log(err));
   };
 
   useEffect(() => {
@@ -127,44 +161,59 @@ function ChatWindow({}) {
 
   //   const { data, error, isLoading } = useSWR("/api/user", fetcher);
   return (
-    <div className="p-4 col-span-9 box-border max-w-[75vw] min-w-[75vw] m-auto ">
-      <div className="bg-gray-400 rounded-lg pt-4 pb-4 px-6  flex flex-col items-center   m-auto  ">
-        <LanguageSelector
-          isDanish={isDanish}
-          handleSwitchToDanish={handleSwitchToDanish}
-        />
-        <div className="min-h-[60vh] max-h-[60vh] border-b-2  bg-white rounded-b-lg w-full overflow-y-scroll mb-2">
-          {chatInfo.map((chat, index) => (
-            <Chat
-              message={chat.content}
-              role={chat.role}
-              timeTaken={chat.totalTime}
-              key={index}
+    <>
+      <Modal
+        handleNo={handleNo}
+        handleYes={handleYes}
+        message={
+          isDanish
+            ? "Vil du skifte til engelsk?"
+            : "Do you want to switch to Danish?"
+        }
+        isOpen={isModalOpen}
+        isDanish={isDanish}
+      />
+      <div className="col-span-9 box-border m-auto w-full h-screen bg-[#f2f2f2] ">
+        <div className="bg-[#f2f2f2] pt-4 px-6  m-auto h-screen my-10">
+          <div className="rounded-lg flex flex-col items-center mx-auto max-w-[60%] bg-[#bfbfc0] p-10">
+            <LanguageSelector
+              isDanish={isDanish}
+              handleSwitchToDanish={handleSwitchToDanish}
             />
-          ))}
-          {isGenerating ? (
-            <div className=" animate-pulse flex p-3 flex-row gap-2 w-full text-gray-500">
-              <Spinner />
-              <div className=" flex flex-col gap-2 w-full  ">
-                <div className="flex justify-end">
-                  <div className="rounded-lg bg-slate-300 h-6 w-[85%]"></div>
+            <div className="min-h-[60vh] max-h-[60vh] border-b-2  bg-white rounded-b-lg w-full overflow-y-scroll mb-2">
+              {chatInfo.map((chat, index) => (
+                <Chat
+                  message={chat.content}
+                  role={chat.role}
+                  timeTaken={chat.totalTime}
+                  key={index}
+                />
+              ))}
+              {isGenerating ? (
+                <div className=" animate-pulse flex p-3 flex-row gap-2 w-full text-gray-500">
+                  <Spinner />
+                  <div className=" flex flex-col gap-2 w-full  ">
+                    <div className="flex justify-end">
+                      <div className="rounded-lg bg-slate-300 h-6 w-[85%]"></div>
+                    </div>
+                    <div className=" rounded-lg bg-slate-300 h-6 w-full"></div>
+                    <div className="rounded-lg bg-slate-300 h-6 w-[70%]"></div>
+                  </div>
                 </div>
-                <div className=" rounded-lg bg-slate-300 h-6 w-full"></div>
-                <div className="rounded-lg bg-slate-300 h-6 w-[70%]"></div>
-              </div>
+              ) : (
+                ""
+              )}
             </div>
-          ) : (
-            ""
-          )}
+            <PromptInput
+              prompt={prompt}
+              setPrompt={setPrompt}
+              handlePromptSubmit={handlePromptSubmit}
+              isGenerating={isGenerating}
+            />
+          </div>
         </div>
-        <PromptInput
-          prompt={prompt}
-          setPrompt={setPrompt}
-          handlePromptSubmit={handlePromptSubmit}
-          isGenerating={isGenerating}
-        />
       </div>
-    </div>
+    </>
   );
 }
 
