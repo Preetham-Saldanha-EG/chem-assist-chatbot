@@ -3,8 +3,8 @@ import React from "react";
 function Chat({ role, message, timeTaken }) {
   const style =
     role === "user"
-      ? "bg-blue-100  rounded-sm p-3 w-full flex gap-3 box-border"
-      : "bg-gray-100  rounded-sm p-3 w-full flex gap-3 box-border";
+      ? "bg-blue-100 rounded-md p-3 w-full flex gap-3 box-border my-1"
+      : "bg-gray-100 rounded-md p-3 w-full flex gap-3 box-border my-1";
 
   return (
     <div className={style}>
