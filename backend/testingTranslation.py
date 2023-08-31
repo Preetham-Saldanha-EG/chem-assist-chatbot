@@ -3,6 +3,9 @@ from engToDan import EngToDanTranslator
 llmDan = DanToEngTranslator()
 llmEng = EngToDanTranslator()
 # print(llmEng("slufuric acid fell on my hand"))
-print(llmEng("Do you want to switch  to english?"))
+print(llmEng("safety measures before and after unloading sulfuric acid"))
+# sikkerhedsforanstaltninger før og efter aflæsning af svovlsyre
 print(llmEng("Yes"))
-# print(llmDan("Beklager, jeg ved ikke om dette. Giv venligst mere kontekst eller oplysninger om det scenario, du henviser til, så jeg kan hjælpe dig bedre. Mente du svovlsyre? Hvis ja, Bemærk venligst, at det er et meget ætsende og giftigt stof, der kan forårsage alvorlige forbrændinger og øjenskader ved kontakt med hud eller øjne. Det er vigtigt at håndtere svovlsyre med forsigtighed og bære passende beskyttende tøj, herunder handsker, sikkerhedsbriller, og et ansigtsskjold. Hvis du ved et uheld har spildt svovlsyre på din hånd, bedes du søge lægehjælp straks."))
+print(llmEng("how to handle liquid nitrogen while transporting?"))
+# hvordan man håndterer flydende nitrogen under transport?
+# print(llmDan("Åh nej, jeg er så ked af at høre, at svovlsyre faldt på din hånd!! Det kan være meget smertefuldt og farligt. Som en ekspert i kemi, jeg skal råde dig til at håndtere situationen med yderste omhu for at undgå yderligere skade eller eksponering for farlige kemikalier. For det første, skal du vaske det berørte område grundigt med sæbe og vand for at fjerne eventuelle resterende svovlsyre. Dette vil hjælpe med at reducere risikoen for irritation eller forbrændinger. Hvis du oplever nogen ubehag eller smerter, skal du anvende en lokal antiseptisk creme eller salve til det berørte område for at lette ubehag. Næste, bedes du søge lægehjælp straks. Sulfursyre er en meget ætsende og giftige stof, der kan forårsage alvorlige forbrændinger, blister, og endda permanent ardannelse, hvis ikke behandles hurtigt. Medicinske fagfolk vil være i stand til at vurdere sværhedsgraden af din skade og give passende behandling, såsom rengøring og dressning det berørte område, eller administrere medicin til at reducere ubehag og forebygge infektion."))

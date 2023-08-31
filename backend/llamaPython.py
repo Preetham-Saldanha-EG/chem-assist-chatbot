@@ -8,7 +8,7 @@ class Llama2 :
         self.llm = Llama(model_path="./models/llama-2-7b-chat.ggmlv3.q4_0.bin",n_ctx=2000)
 
     def __call__(self,prompt):
-        output = self.llm( prompt=prompt,max_tokens=4000, echo=True,stop=["</s>"])
+        output = self.llm( prompt=prompt ,max_tokens=2000, echo=True,stop=["</s>"])
         return output
 
     
